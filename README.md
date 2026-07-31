@@ -2,7 +2,7 @@
 
 **Final-year AI/NLP project for explainable resume analysis, recruiter-fit scoring and job recommendations.**
 
-The platform extracts a candidate profile from PDF/DOCX/TXT resumes, compares it with a job description using **Sentence Transformer embeddings**, explains which resume evidence supports each requirement, identifies skill gaps, evaluates ATS quality, recommends suitable roles and stores privacy-safe history in **PostgreSQL**.
+The platform extracts a candidate profile from PDF/DOCX/TXT resumes, generates a neutral benchmark job description for virtually any entered role, compares the resume with that description using **Sentence Transformer embeddings**, explains supporting evidence, identifies skill gaps, evaluates ATS quality and stores privacy-safe history in **PostgreSQL**.
 
 ## Why this is not a keyword counter
 
@@ -19,6 +19,9 @@ If the Sentence Transformer cannot load, a calibrated TF-IDF matcher keeps the a
 
 ## Recruiter-ready features
 
+- Universal job-title-to-description generation for technical and non-technical roles
+- Optional Gemini AI generation with a broad deterministic fallback
+- Automatic extraction of arbitrary role-specific skills listed under required/preferred sections
 - Explainable resume-to-JD semantic score
 - Required vs preferred skill extraction
 - Matched skills, missing skills and a learning roadmap
@@ -177,6 +180,10 @@ DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
 STORE_PII=false
 ADMIN_DASHBOARD_PIN=your-private-pin
 ADMIN_API_KEY=your-long-random-api-key
+
+# Optional: enables high-quality arbitrary-role JD generation
+GEMINI_API_KEY=your-google-ai-studio-key
+GEMINI_MODEL=gemini-3.6-flash
 ```
 
 The application automatically converts standard `postgresql://` and legacy `postgres://` URLs to the SQLAlchemy psycopg driver format.
@@ -209,8 +216,15 @@ The GitHub Actions workflow also compiles the project and runs tests on every pu
 | GET | `/api/v1/history` | Session-isolated history |
 | POST | `/api/v1/history/{id}/feedback` | Human feedback event |
 | GET | `/api/v1/jobs` | Active job catalog |
+| POST | `/api/v1/jobs/generate-description` | Admin-protected universal JD generation |
 | POST | `/api/v1/jobs` | Admin-protected job creation |
 | GET | `/api/v1/admin/dashboard` | Admin analytics |
+
+## Universal job-description generation
+
+The UI accepts titles such as Software Developer, Nurse, Accountant, Teacher, Chef, Electrician, Graphic Designer or a niche custom role. When `GEMINI_API_KEY` is configured, the provider creates a structured neutral draft. If the provider is unavailable, the application automatically switches to a broad role-family fallback so analysis remains available. Generated descriptions are benchmark drafts, not official company vacancies; a real employer JD should be pasted for actual applications.
+
+Detailed upgrade and deployment notes: [`docs/UNIVERSAL_JOB_GENERATOR.md`](docs/UNIVERSAL_JOB_GENERATOR.md)
 
 ## Responsible AI and privacy
 

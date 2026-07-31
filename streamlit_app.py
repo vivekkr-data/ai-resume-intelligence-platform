@@ -6,18 +6,18 @@ import json
 import secrets
 import uuid
 from datetime import timezone
-from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 from sqlalchemy import func, select
 
-from backend.config import BASE_DIR, settings
+from backend.config import settings
 from backend.database import SessionLocal, database_health, init_db
 from backend.models import AnalysisFeedback, AnalysisRecord, JobPosting
 from backend.services.analyzer import analyze_resume
 from backend.services.document_parser import DocumentParseError, extract_text_from_bytes
 from backend.services.job_recommender import recommend_jobs
+from backend.services.job_description_generator import generate_job_description
 from backend.services.report import html_report, markdown_report
 
 st.set_page_config(
@@ -64,9 +64,35 @@ if "session_id" not in st.session_state:
     st.session_state.session_id = uuid.uuid4().hex
 
 SESSION_ID: str = st.session_state.session_id
-SAMPLE_JD_PATH = BASE_DIR / "sample_data" / "recruiter_demo_job_description.txt"
-if not SAMPLE_JD_PATH.exists():
-    SAMPLE_JD_PATH = BASE_DIR / "sample_data" / "sample_job_description.txt"
+
+# Apply a JD generated during an analyze-and-rerun cycle before the text-area
+# widget is instantiated.
+if "pending_generated_jd" in st.session_state:
+    st.session_state.job_description_input = st.session_state.pop("pending_generated_jd")
+
+if "job_title_input" not in st.session_state:
+    st.session_state.job_title_input = "AI / Machine Learning Intern"
+if "job_description_input" not in st.session_state:
+    st.session_state.job_description_input = ""
+if "generated_jd_source" not in st.session_state:
+    st.session_state.generated_jd_source = ""
+if "generated_jd_warning" not in st.session_state:
+    st.session_state.generated_jd_warning = ""
+if "last_generated_jd" not in st.session_state:
+    st.session_state.last_generated_jd = ""
+if "generated_for_title" not in st.session_state:
+    st.session_state.generated_for_title = ""
+
+
+def clear_stale_generated_jd() -> None:
+    """Clear an untouched generated JD when the user changes the title."""
+    current_jd = st.session_state.get("job_description_input", "")
+    if current_jd and current_jd == st.session_state.get("last_generated_jd", ""):
+        st.session_state.job_description_input = ""
+        st.session_state.generated_jd_source = ""
+        st.session_state.generated_jd_warning = ""
+        st.session_state.last_generated_jd = ""
+        st.session_state.generated_for_title = ""
 
 
 def chips(items: list[str], css_class: str) -> None:
@@ -130,6 +156,9 @@ with st.sidebar:
     st.write(f"**Database:** {settings.database_backend}")
     st.write(f"**Database health:** {'Connected' if db_ok else 'Unavailable'}")
     st.write(f"**Environment:** {settings.environment}")
+    st.write(
+        f"**JD generator:** {'Gemini AI + fallback' if settings.gemini_api_key else 'Universal local fallback'}"
+    )
     st.divider()
     st.markdown("**Scoring architecture**")
     st.caption("60% semantic alignment")
@@ -146,7 +175,7 @@ st.markdown(
     """
     <div class="hero">
       <h1>AI Resume Intelligence Platform</h1>
-      <p>Explainable semantic job matching, ATS quality analysis, skill-gap planning, PostgreSQL history and database-backed job recommendations.</p>
+      <p>Universal job-description generation, explainable resume matching, ATS analysis, skill-gap planning and PostgreSQL history.</p>
       <span class="badge">Sentence Transformers</span>
       <span class="badge">FastAPI</span>
       <span class="badge">PostgreSQL</span>
@@ -176,31 +205,119 @@ with analyzer_tab:
             help="Text-based PDF, DOCX and TXT are supported. Maximum size is configured in .env.",
             key="analysis_resume",
         )
-        job_title = st.text_input("Target job title", "AI / Machine Learning Intern")
-        use_demo = st.button("Load recruiter demo job description", use_container_width=True)
-        if use_demo:
-            st.session_state.demo_jd = SAMPLE_JD_PATH.read_text(encoding="utf-8")
+        job_title = st.text_input(
+            "Target job title",
+            key="job_title_input",
+            placeholder="Examples: Software Developer, Nurse, Accountant, Teacher, Graphic Designer",
+            on_change=clear_stale_generated_jd,
+        )
+        option_a, option_b = st.columns(2)
+        with option_a:
+            seniority = st.selectbox(
+                "Seniority",
+                [
+                    "Auto-detect",
+                    "Intern / Trainee",
+                    "Entry level",
+                    "Mid level",
+                    "Senior",
+                    "Lead / Principal",
+                    "Manager / Leadership",
+                ],
+            )
+        with option_b:
+            employment_type = st.selectbox(
+                "Employment type",
+                ["Full-time", "Internship", "Part-time", "Contract", "Apprenticeship"],
+            )
+        location_context = st.text_input(
+            "Location or industry context (optional)",
+            placeholder="Example: India, hospital, fintech, school",
+        )
+        generate_clicked = st.button(
+            "✨ Generate universal job description",
+            type="secondary",
+            use_container_width=True,
+        )
+        if generate_clicked:
+            try:
+                with st.spinner("Creating a role-specific benchmark job description..."):
+                    generated = generate_job_description(
+                        job_title,
+                        seniority=seniority,
+                        employment_type=employment_type,
+                        location=location_context.strip() or "Not specified",
+                    )
+                st.session_state.job_description_input = generated.text
+                st.session_state.generated_jd_source = generated.source
+                st.session_state.generated_jd_warning = generated.warning or ""
+                st.session_state.last_generated_jd = generated.text
+                st.session_state.generated_for_title = job_title.strip()
+            except Exception as exc:
+                safe_error(exc)
+
+        auto_generate = st.checkbox(
+            "Automatically generate a JD when Analyze is clicked and the box is empty",
+            value=True,
+        )
+        st.caption(
+            "Generated descriptions are neutral benchmark drafts. For a real application, the company's original JD remains the most accurate source."
+        )
     with top_right:
         job_description = st.text_area(
             "Job description",
-            height=285,
-            value=st.session_state.get("demo_jd", ""),
-            placeholder="Paste responsibilities, must-have skills, preferred skills, education and experience requirements...",
+            height=410,
+            key="job_description_input",
+            placeholder="Paste a real company JD, or enter any job title and generate a benchmark JD...",
         )
+        if st.session_state.generated_jd_source:
+            st.caption(f"Generated by: {st.session_state.generated_jd_source}")
+        if st.session_state.generated_jd_warning:
+            st.warning(st.session_state.generated_jd_warning)
+        if (
+            st.session_state.generated_for_title
+            and st.session_state.generated_for_title.casefold() != job_title.strip().casefold()
+        ):
+            st.warning("The title changed after this generated JD was created. Generate it again or paste the correct company JD before analysis.")
 
     if st.button("🚀 Run Explainable Analysis", type="primary", use_container_width=True):
         if uploaded is None:
             st.error("Upload a resume first.")
-        elif len(job_description.strip()) < 30:
-            st.error("Paste a meaningful job description of at least 30 characters.")
+        elif len(job_title.strip()) < 2:
+            st.error("Enter a meaningful target job title.")
         else:
             try:
-                with st.spinner("Extracting profile, generating embeddings and building evidence..."):
-                    resume_text = extract_text_from_bytes(uploaded.getvalue(), uploaded.name)
-                    st.session_state.latest_analysis = save_analysis(
-                        resume_text, job_description, uploaded.name, job_title
+                analysis_jd = job_description.strip()
+                generated_during_analysis = False
+                if len(analysis_jd) < 30 and auto_generate:
+                    with st.spinner("Generating the job description first..."):
+                        generated = generate_job_description(
+                            job_title,
+                            seniority=seniority,
+                            employment_type=employment_type,
+                            location=location_context.strip() or "Not specified",
+                        )
+                    analysis_jd = generated.text
+                    st.session_state.pending_generated_jd = generated.text
+                    st.session_state.generated_jd_source = generated.source
+                    st.session_state.generated_jd_warning = generated.warning or ""
+                    st.session_state.last_generated_jd = generated.text
+                    st.session_state.generated_for_title = job_title.strip()
+                    generated_during_analysis = True
+                if len(analysis_jd) < 30:
+                    st.error("Paste a meaningful job description or enable automatic generation.")
+                else:
+                    with st.spinner("Extracting profile, generating embeddings and building evidence..."):
+                        resume_text = extract_text_from_bytes(uploaded.getvalue(), uploaded.name)
+                        st.session_state.latest_analysis = save_analysis(
+                            resume_text, analysis_jd, uploaded.name, job_title
+                        )
+                    st.success(
+                        "Analysis completed"
+                        + (" and saved to the configured database." if db_ok else ". Database was unavailable, so this result was not persisted.")
                     )
-                st.success("Analysis completed" + (" and saved to the configured database." if db_ok else ". Database was unavailable, so this result was not persisted."))
+                    if generated_during_analysis:
+                        st.rerun()
             except DocumentParseError as exc:
                 st.error(str(exc))
             except Exception as exc:
@@ -521,7 +638,7 @@ with system_tab:
 
         1. Validate PDF, DOCX or TXT upload and extract text.
         2. Detect contact details, sections, education, experience dates and a curated skill taxonomy.
-        3. Separate required skills from preferred skills in the job description.
+        3. Generate or accept a role-specific job description and extract both taxonomy and arbitrary declared skills.
         4. Create resume and job-description chunks.
         5. Generate normalized embeddings and calculate requirement-level cosine similarity.
         6. Combine semantic, skill, experience and ATS-quality scores.

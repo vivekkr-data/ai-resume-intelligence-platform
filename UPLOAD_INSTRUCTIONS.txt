@@ -1,0 +1,1 @@
+Upload the CONTENTS of this folder to the root of your existing GitHub repository and replace files when GitHub asks. Do not upload this parent folder as a nested directory. Commit message: Enable Gemini AI-first universal JD generation. Then add GEMINI_API_KEY, GEMINI_MODEL and GEMINI_TIMEOUT_SECONDS to Streamlit Secrets and reboot the app.

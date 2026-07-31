@@ -41,6 +41,9 @@ class Settings:
     embedding_model: str = os.getenv(
         "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
     )
+    gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+    gemini_timeout_seconds: int = int(os.getenv("GEMINI_TIMEOUT_SECONDS", "25"))
     jobs_csv: Path = Path(os.getenv("JOBS_CSV", str(BASE_DIR / "data" / "jobs.csv")))
     max_upload_mb: int = int(os.getenv("MAX_UPLOAD_MB", "10"))
     allow_origins: tuple[str, ...] = tuple(
