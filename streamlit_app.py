@@ -268,7 +268,7 @@ with analyzer_tab:
             st.markdown("#### Candidate strengths")
             if result.get("strengths"):
                 for item in result["strengths"]:
-                    st.success(item, icon="✓")
+                    st.success(item, icon="✅")
             else:
                 st.info("No strong evidence was detected yet; use the improvement plan below.")
 
