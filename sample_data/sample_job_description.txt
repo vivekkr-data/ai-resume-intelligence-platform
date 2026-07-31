@@ -1,0 +1,3 @@
+AI/ML Intern
+
+We are looking for an AI/ML intern who can work with Python, machine learning, Pandas, NumPy and Scikit-learn. The candidate will build NLP prototypes, evaluate models, expose inference through FastAPI, use Git for version control and communicate experiment results. Experience with Sentence Transformers, Docker and PostgreSQL is a plus. Strong project work is accepted in place of professional experience.

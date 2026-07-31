@@ -1,0 +1,59 @@
+{
+  "info": {
+    "name": "AI Resume Intelligence API",
+    "description": "FastAPI endpoints for health, analysis, recommendations, history and job catalog.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "base_url", "value": "http://localhost:8000"},
+    {"key": "session_id", "value": "postman-demo-session"},
+    {"key": "admin_key", "value": "replace-with-admin-key"}
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/v1/health"
+      }
+    },
+    {
+      "name": "List Jobs",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/v1/jobs"
+      }
+    },
+    {
+      "name": "Analyze Resume",
+      "request": {
+        "method": "POST",
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {"key": "resume", "type": "file", "src": []},
+            {"key": "job_title", "value": "AI / Machine Learning Intern", "type": "text"},
+            {"key": "session_id", "value": "{{session_id}}", "type": "text"},
+            {"key": "job_description", "value": "Build NLP and machine-learning prototypes using Python, FastAPI, SQL and Git. Preferred: PostgreSQL, Docker and Sentence Transformers.", "type": "text"}
+          ]
+        },
+        "url": "{{base_url}}/api/v1/analyze"
+      }
+    },
+    {
+      "name": "Session History",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/v1/history?session_id={{session_id}}"
+      }
+    },
+    {
+      "name": "Admin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [{"key": "X-Admin-Key", "value": "{{admin_key}}"}],
+        "url": "{{base_url}}/api/v1/admin/dashboard"
+      }
+    }
+  ]
+}

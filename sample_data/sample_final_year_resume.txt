@@ -1,0 +1,33 @@
+AARAV SHARMA
+Bengaluru, India | aarav.sharma@example.com | +91 98765 43210
+https://linkedin.com/in/aarav-sharma | https://github.com/aarav-sharma
+
+PROFESSIONAL SUMMARY
+Final-year B.Tech Computer Science student focused on machine learning, NLP and backend engineering. Built and deployed explainable AI applications using Python, Sentence Transformers, FastAPI, Streamlit and PostgreSQL.
+
+TECHNICAL SKILLS
+Python, SQL, Pandas, NumPy, Scikit-learn, Machine Learning, Natural Language Processing, Sentence Transformers, Hugging Face, FastAPI, Streamlit, PostgreSQL, SQLAlchemy, Docker, Git, GitHub, Linux, CI/CD
+
+PROJECTS
+AI Resume Intelligence Platform | Python, NLP, FastAPI, Streamlit, PostgreSQL
+• Developed an explainable semantic resume-to-job matching pipeline using Sentence Transformer embeddings and cosine similarity.
+• Separated required and preferred skills, generated ATS checks and displayed requirement-to-resume evidence for transparent scoring.
+• Designed three PostgreSQL tables with session-isolated history, masked PII and human feedback collection.
+• Exposed 8 versioned REST endpoints with FastAPI and validated the system using 7 automated tests.
+• Containerized Streamlit, FastAPI and PostgreSQL using Docker Compose and configured cloud deployment.
+
+Student Performance Prediction | Python, Scikit-learn, Pandas
+• Cleaned and analyzed 10,000 student records and trained classification baselines.
+• Improved validation F1-score from 0.71 to 0.84 through feature engineering and model comparison.
+• Built a dashboard to explain predictions and dataset limitations.
+
+EDUCATION
+B.Tech in Computer Science and Engineering | 2023 - 2027
+ABC Institute of Technology | CGPA: 8.4/10
+
+CERTIFICATIONS
+Machine Learning with Python | SQL Fundamentals | Git and GitHub
+
+ACHIEVEMENTS
+• Solved 250+ data-structure and algorithm problems.
+• Presented the resume intelligence project to a 4-member academic evaluation panel.

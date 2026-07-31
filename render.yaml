@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ai-resume-intelligence
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py --server.address 0.0.0.0 --server.port $PORT
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: APP_ENV
+        value: production
+      - key: STORE_PII
+        value: "false"
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/all-MiniLM-L6-v2
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_DASHBOARD_PIN
+        sync: false
+      - key: ADMIN_API_KEY
+        sync: false

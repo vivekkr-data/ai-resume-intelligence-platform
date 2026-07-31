@@ -1,0 +1,17 @@
+AI / Machine Learning Intern
+
+Responsibilities
+- Build and evaluate machine-learning and NLP prototypes using Python.
+- Develop semantic search or text-classification pipelines with Sentence Transformers or Hugging Face.
+- Create REST APIs using FastAPI and integrate results with a Streamlit interface.
+- Work with PostgreSQL, SQLAlchemy and Git in a collaborative development workflow.
+- Write tests, document experiments and deploy a working demonstration using Docker or a cloud platform.
+
+Required skills
+Python, Machine Learning, Natural Language Processing, Scikit-learn, Pandas, NumPy, FastAPI, SQL, Git
+
+Preferred skills
+Sentence Transformers, Hugging Face, PostgreSQL, Docker, Streamlit, CI/CD
+
+Education and experience
+B.Tech or equivalent in Computer Science, AI or IT. Strong final-year projects are accepted in place of formal industry experience.

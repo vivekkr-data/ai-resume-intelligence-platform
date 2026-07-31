@@ -1,0 +1,24 @@
+ARUN RAO
+arun.rao@example.com | +91 98765 43210 | https://github.com/arunrao | https://linkedin.com/in/arunrao
+
+PROFESSIONAL SUMMARY
+Third-year Computer Science student interested in AI and machine learning. Built practical NLP and data analysis projects using Python.
+
+TECHNICAL SKILLS
+Python, SQL, Pandas, NumPy, Scikit-learn, Natural Language Processing, Streamlit, FastAPI, Git, SQLite, Power BI
+
+PROJECTS
+AI Resume Analyzer
+• Developed an NLP application that extracts resume skills and compares them with job descriptions.
+• Implemented semantic similarity with Sentence Transformers and improved matching quality over keyword-only baselines.
+• Built a Streamlit dashboard and FastAPI service, processing more than 100 sample resumes.
+
+Student Performance Predictor
+• Trained regression and classification models using Scikit-learn and Pandas.
+• Achieved 87% validation accuracy after feature engineering and model evaluation.
+
+EDUCATION
+B.Tech in Computer Science and Engineering, XYZ University, 2024-2028
+
+CERTIFICATIONS
+Machine Learning with Python; SQL Fundamentals
